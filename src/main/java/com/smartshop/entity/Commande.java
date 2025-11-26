@@ -120,6 +120,4 @@ public class Commande {
     }
 }
 
-enum OrderStatus {
-    PENDING, CONFIRMED, CANCELED, REJECTED
-}
+

@@ -56,10 +56,4 @@ public class Paiement {
     }
 }
 
-enum PaymentType {
-    ESPECES, CHEQUE, VIREMENT
-}
 
-enum PaymentStatus {
-    EN_ATTENTE, ENCAISSÉ, REJETÉ
-}

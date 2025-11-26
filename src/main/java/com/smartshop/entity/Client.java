@@ -73,6 +73,3 @@ public class Client {
     }
 }
 
-enum CustomerTier {
-    BASIC, SILVER, GOLD, PLATINUM
-}

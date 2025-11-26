@@ -32,6 +32,5 @@ public class User {
     private Client client;
 }
 
-enum UserRole {
-    ADMIN, CLIENT
-}
+
+
