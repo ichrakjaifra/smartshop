@@ -94,19 +94,7 @@ public class Commande {
                 .setScale(2, BigDecimal.ROUND_HALF_UP);
     }
 
-    private BigDecimal calculerRemiseFidelite() {
-        if (client == null) return BigDecimal.ZERO;
 
-        CustomerTier niveau = client.getNiveauFidelite();
-        if (niveau == CustomerTier.SILVER && sousTotalHT.compareTo(new BigDecimal("500")) >= 0) {
-            return sousTotalHT.multiply(new BigDecimal("0.05"));
-        } else if (niveau == CustomerTier.GOLD && sousTotalHT.compareTo(new BigDecimal("800")) >= 0) {
-            return sousTotalHT.multiply(new BigDecimal("0.10"));
-        } else if (niveau == CustomerTier.PLATINUM && sousTotalHT.compareTo(new BigDecimal("1200")) >= 0) {
-            return sousTotalHT.multiply(new BigDecimal("0.15"));
-        }
-        return BigDecimal.ZERO;
-    }
 
     private BigDecimal calculerRemisePromo() {
         if (codePromo != null && codePromo.matches("PROMO-[A-Z0-9]{4}")) {
