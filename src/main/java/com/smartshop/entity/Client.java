@@ -49,8 +49,27 @@ public class Client {
     @Builder.Default
     private List<Commande> commandes = new ArrayList<>();
 
+    public void incrementerCommandes(BigDecimal montant) {
+        this.totalCommandes++;
+        this.montantCumule = this.montantCumule.add(montant);
+        this.dateDerniereCommande = LocalDate.now();
 
+        if (this.datePremiereCommande == null) {
+            this.datePremiereCommande = LocalDate.now();
+        }
 
+        mettreAJourNiveauFidelite();
+    }
 
+    private void mettreAJourNiveauFidelite() {
+        if (totalCommandes >= 20 || montantCumule.compareTo(new BigDecimal("15000")) >= 0) {
+            this.niveauFidelite = CustomerTier.PLATINUM;
+        } else if (totalCommandes >= 10 || montantCumule.compareTo(new BigDecimal("5000")) >= 0) {
+            this.niveauFidelite = CustomerTier.GOLD;
+        } else if (totalCommandes >= 3 || montantCumule.compareTo(new BigDecimal("1000")) >= 0) {
+            this.niveauFidelite = CustomerTier.SILVER;
+        }
+        // BASIC reste BASIC
+    }
 }
 
