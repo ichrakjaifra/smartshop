@@ -22,7 +22,15 @@ public class ClientService {
     private final ClientMapper clientMapper;
     private final AuthService authService;
 
+    private void verifierAuthentification(HttpSession session) {
+        if (session.getAttribute("user") == null) {
+            throw new RuntimeException("Accès refusé: Authentification requise");
+        }
+    }
+
     public ClientDTO creerClient(ClientDTO clientDTO, HttpSession session) {
+        verifierAuthentification(session);
+
         if (!authService.isAdmin(session)) {
             throw new RuntimeException("Accès refusé: Admin requis");
         }
@@ -44,6 +52,8 @@ public class ClientService {
     }
 
     public List<ClientDTO> trouverTousClients(HttpSession session) {
+        verifierAuthentification(session);
+
         if (!authService.isAdmin(session)) {
             throw new RuntimeException("Accès refusé: Admin requis");
         }
@@ -54,8 +64,9 @@ public class ClientService {
     }
 
     public ClientDTO trouverClientParId(Long id, HttpSession session) {
+        verifierAuthentification(session);
+
         if (authService.isClient(session)) {
-            // Un client ne peut voir que son propre profil
             Long currentUserId = authService.getCurrentUserId(session);
             Client client = clientRepository.findByUserId(currentUserId)
                     .orElseThrow(() -> new RuntimeException("Client non trouvé"));
@@ -71,6 +82,8 @@ public class ClientService {
     }
 
     public ClientDTO mettreAJourClient(Long id, ClientDTO clientDTO, HttpSession session) {
+        verifierAuthentification(session);
+
         if (!authService.isAdmin(session)) {
             throw new RuntimeException("Accès refusé: Admin requis");
         }
@@ -88,6 +101,8 @@ public class ClientService {
     }
 
     public void supprimerClient(Long id, HttpSession session) {
+        verifierAuthentification(session);
+
         if (!authService.isAdmin(session)) {
             throw new RuntimeException("Accès refusé: Admin requis");
         }

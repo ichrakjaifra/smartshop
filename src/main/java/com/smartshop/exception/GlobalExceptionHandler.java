@@ -26,14 +26,21 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ErrorResponse> handleRuntimeException(RuntimeException ex, WebRequest request) {
+        HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
+        if (ex.getMessage() != null && (
+                ex.getMessage().contains("Authentification requise") ||
+                        ex.getMessage().contains("Accès refusé"))) {
+            status = HttpStatus.UNAUTHORIZED; // 401 pour non authentifié
+        }
+
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .timestamp(LocalDateTime.now())
-                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                .error("Internal Server Error")
+                .status(status.value())
+                .error(status == HttpStatus.UNAUTHORIZED ? "Authentication Error" : "Internal Server Error")
                 .message(ex.getMessage())
                 .path(request.getDescription(false))
                 .build();
-        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(errorResponse, status);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
