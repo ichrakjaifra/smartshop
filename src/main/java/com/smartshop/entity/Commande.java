@@ -58,7 +58,62 @@ public class Commande {
     @Builder.Default
     private OrderStatus statut = OrderStatus.PENDING;
 
+    @PrePersist
+    @PreUpdate
+    public void calculerTotaux() {
+        // Sous-total HT
+        this.sousTotalHT = items.stream()
+                .map(OrderItem::getTotalLigne)
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .setScale(2, BigDecimal.ROUND_HALF_UP);
 
+        // Application des remises
+        BigDecimal remiseFidelite = calculerRemiseFidelite();
+        BigDecimal remisePromo = calculerRemisePromo();
+        this.montantRemise = remiseFidelite.add(remisePromo)
+                .setScale(2, BigDecimal.ROUND_HALF_UP);
+
+        // Montant HT après remise
+        this.montantHTApresRemise = sousTotalHT.subtract(montantRemise)
+                .setScale(2, BigDecimal.ROUND_HALF_UP);
+
+        // TVA (20%)
+        this.tva = montantHTApresRemise.multiply(new BigDecimal("0.20"))
+                .setScale(2, BigDecimal.ROUND_HALF_UP);
+
+        // Total TTC
+        this.totalTTC = montantHTApresRemise.add(tva)
+                .setScale(2, BigDecimal.ROUND_HALF_UP);
+
+        // Montant restant
+        BigDecimal totalPaye = paiements.stream()
+                .filter(p -> p.getStatut() == PaymentStatus.ENCAISSÉ)
+                .map(Paiement::getMontant)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        this.montantRestant = totalTTC.subtract(totalPaye)
+                .setScale(2, BigDecimal.ROUND_HALF_UP);
+    }
+
+    private BigDecimal calculerRemiseFidelite() {
+        if (client == null) return BigDecimal.ZERO;
+
+        CustomerTier niveau = client.getNiveauFidelite();
+        if (niveau == CustomerTier.SILVER && sousTotalHT.compareTo(new BigDecimal("500")) >= 0) {
+            return sousTotalHT.multiply(new BigDecimal("0.05"));
+        } else if (niveau == CustomerTier.GOLD && sousTotalHT.compareTo(new BigDecimal("800")) >= 0) {
+            return sousTotalHT.multiply(new BigDecimal("0.10"));
+        } else if (niveau == CustomerTier.PLATINUM && sousTotalHT.compareTo(new BigDecimal("1200")) >= 0) {
+            return sousTotalHT.multiply(new BigDecimal("0.15"));
+        }
+        return BigDecimal.ZERO;
+    }
+
+    private BigDecimal calculerRemisePromo() {
+        if (codePromo != null && codePromo.matches("PROMO-[A-Z0-9]{4}")) {
+            return sousTotalHT.multiply(new BigDecimal("0.05"));
+        }
+        return BigDecimal.ZERO;
+    }
 
     public boolean estEntierementPayee() {
         return montantRestant != null && montantRestant.compareTo(BigDecimal.ZERO) == 0;
