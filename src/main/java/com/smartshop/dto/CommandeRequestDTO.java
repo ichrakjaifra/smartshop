@@ -16,11 +16,3 @@ public class CommandeRequestDTO {
     private String codePromo;
 }
 
-@Data
-class OrderItemDTO {
-    @NotNull(message = "Product ID est obligatoire")
-    private Long productId;
-
-    @NotNull(message = "La quantité est obligatoire")
-    private Integer quantite;
-}

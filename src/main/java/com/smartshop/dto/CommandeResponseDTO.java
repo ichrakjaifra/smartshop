@@ -23,21 +23,3 @@ public class CommandeResponseDTO {
     private List<PaiementResponseDTO> paiements;
 }
 
-@Data
-class OrderItemResponseDTO {
-    private Long productId;
-    private String productNom;
-    private Integer quantite;
-    private BigDecimal prixUnitaire;
-    private BigDecimal totalLigne;
-}
-
-@Data
-class PaiementResponseDTO {
-    private Long id;
-    private Integer numeroPaiement;
-    private BigDecimal montant;
-    private String typePaiement;
-    private String statut;
-    private String reference;
-}
