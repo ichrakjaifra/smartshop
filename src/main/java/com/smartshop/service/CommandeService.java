@@ -40,15 +40,18 @@ public class CommandeService {
                 .statut(OrderStatus.PENDING)
                 .build();
 
-        // Ajouter les items
+        // Ajouter les items et vérifier le stock
         List<OrderItem> items = new ArrayList<>();
+        boolean stockInsuffisant = false;
+
         for (OrderItemDTO itemDTO : requestDTO.getItems()) {
             Product product = productRepository.findById(itemDTO.getProductId())
                     .orElseThrow(() -> new RuntimeException("Produit non trouvé: " + itemDTO.getProductId()));
 
             // Vérifier le stock
             if (product.getStockDisponible() < itemDTO.getQuantite()) {
-                throw new RuntimeException("Stock insuffisant pour: " + product.getNom());
+                stockInsuffisant = true;
+                //throw new RuntimeException("Stock insuffisant pour: " + product.getNom());
             }
 
             OrderItem orderItem = OrderItem.builder()
@@ -65,11 +68,14 @@ public class CommandeService {
         commande.calculerTotaux();
 
         // Vérifier si rejet automatique pour stock
-        for (OrderItem item : commande.getItems()) {
+        /*for (OrderItem item : commande.getItems()) {
             if (item.getProduit().getStockDisponible() < item.getQuantite()) {
                 commande.setStatut(OrderStatus.REJECTED);
                 break;
             }
+        }*/
+        if (stockInsuffisant) {
+            commande.setStatut(OrderStatus.REJECTED);
         }
 
         // Sauvegarder
