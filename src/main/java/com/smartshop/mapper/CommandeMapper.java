@@ -14,5 +14,6 @@ public interface CommandeMapper {
     @Mapping(target = "clientNom", source = "client.nom")
     @Mapping(target = "items", source = "items")
     @Mapping(target = "paiements", source = "paiements")
+    @Mapping(target = "codePromoUtilise", source = "codePromoUtilise")
     CommandeResponseDTO toDTO(Commande commande);
 }

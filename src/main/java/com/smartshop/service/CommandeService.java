@@ -33,11 +33,27 @@ public class CommandeService {
         Client client = clientRepository.findById(requestDTO.getClientId())
                 .orElseThrow(() -> new RuntimeException("Client non trouvé"));
 
+        // VALIDER LE CODE PROMO SI PRÉSENT
+        String codePromo = requestDTO.getCodePromo();
+        if (codePromo != null && !codePromo.trim().isEmpty()) {
+            // Vérifier le format
+            if (!codePromo.matches("PROMO-[A-Z0-9]{4}")) {
+                throw new RuntimeException("Format de code promo invalide. Format attendu: PROMO-XXXX");
+            }
+
+            // Vérifier si déjà utilisé DANS UNE COMMANDE CONFIRMÉE
+            boolean codeDejaUtilise = commandeRepository.existsByCodePromoAndCodePromoUtiliseTrue(codePromo);
+            if (codeDejaUtilise) {
+                throw new RuntimeException("Code promo déjà utilisé");
+            }
+        }
+
         // Créer la commande
         Commande commande = Commande.builder()
                 .client(client)
-                .codePromo(requestDTO.getCodePromo())
+                .codePromo(codePromo)
                 .statut(OrderStatus.PENDING)
+                .codePromoUtilise(false)
                 .build();
 
         // Ajouter les items et vérifier le stock
@@ -126,6 +142,20 @@ public class CommandeService {
 
         if (commande.getStatut() != OrderStatus.PENDING) {
             throw new RuntimeException("Seules les commandes PENDING peuvent être confirmées");
+        }
+
+        // MARQUER LE CODE PROMO COMME UTILISÉ SI PRÉSENT
+        if (commande.getCodePromo() != null && !commande.getCodePromo().trim().isEmpty()) {
+            // Vérifier si le code n'a pas déjà été utilisé ailleurs
+            boolean codeDejaUtilise = commandeRepository.existsByCodePromoAndCodePromoUtiliseTrue(
+                    commande.getCodePromo()
+            );
+
+            if (codeDejaUtilise) {
+                throw new RuntimeException("Code promo déjà utilisé sur une autre commande");
+            }
+
+            commande.setCodePromoUtilise(true);
         }
 
         commande.setStatut(OrderStatus.CONFIRMED);

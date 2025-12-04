@@ -54,6 +54,9 @@ public class Commande {
 
     private String codePromo;
 
+    @Column(name = "code_promo_utilise")
+    private Boolean codePromoUtilise = false;
+
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private OrderStatus statut = OrderStatus.PENDING;
@@ -109,8 +112,9 @@ public class Commande {
     }
 
     private BigDecimal calculerRemisePromo() {
-        if (codePromo != null && codePromo.matches("PROMO-[A-Z0-9]{4}")) {
-            return sousTotalHT.multiply(new BigDecimal("0.05"));
+        if (codePromo != null && !codePromo.trim().isEmpty() && !codePromoUtilise) {
+            return sousTotalHT.multiply(new BigDecimal("0.05"))
+                    .setScale(2, BigDecimal.ROUND_HALF_UP);
         }
         return BigDecimal.ZERO;
     }

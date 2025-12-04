@@ -18,6 +18,7 @@ public class CommandeResponseDTO {
     private BigDecimal totalTTC;
     private BigDecimal montantRestant;
     private String codePromo;
+    private Boolean codePromoUtilise;
     private String statut;
     private List<OrderItemResponseDTO> items;
     private List<PaiementResponseDTO> paiements;
