@@ -23,6 +23,28 @@ public class CommandeService {
     private final CommandeMapper commandeMapper;
     private final AuthService authService;
 
+    public CommandeResponseDTO getCommandeById(Long commandeId, HttpSession session) {
+        if (!authService.isAdmin(session) && !authService.isClient(session)) {
+            throw new RuntimeException("Accès refusé: Authentification requise");
+        }
+
+        Commande commande = commandeRepository.findById(commandeId)
+                .orElseThrow(() -> new RuntimeException("Commande non trouvée"));
+
+        // Si c'est un client, vérifier qu'il a accès à cette commande
+        if (authService.isClient(session)) {
+            Long currentUserId = authService.getCurrentUserId(session);
+            Client client = clientRepository.findByUserId(currentUserId)
+                    .orElseThrow(() -> new RuntimeException("Client non trouvé"));
+
+            if (!commande.getClient().getId().equals(client.getId())) {
+                throw new RuntimeException("Accès refusé: Cette commande ne vous appartient pas");
+            }
+        }
+
+        return commandeMapper.toDTO(commande);
+    }
+
     @Transactional
     public CommandeResponseDTO creerCommande(CommandeRequestDTO requestDTO, HttpSession session) {
         if (!authService.isAdmin(session)) {

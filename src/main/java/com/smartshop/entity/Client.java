@@ -50,6 +50,13 @@ public class Client {
     private List<Commande> commandes = new ArrayList<>();
 
     public void incrementerCommandes(BigDecimal montant) {
+        if (this.totalCommandes == null) {
+            this.totalCommandes = 0;
+        }
+        if (this.montantCumule == null) {
+            this.montantCumule = BigDecimal.ZERO;
+        }
+
         this.totalCommandes++;
         this.montantCumule = this.montantCumule.add(montant);
         this.dateDerniereCommande = LocalDate.now();
@@ -62,6 +69,9 @@ public class Client {
     }
 
     private void mettreAJourNiveauFidelite() {
+        if (this.totalCommandes == null) this.totalCommandes = 0;
+        if (this.montantCumule == null) this.montantCumule = BigDecimal.ZERO;
+
         if (totalCommandes >= 20 || montantCumule.compareTo(new BigDecimal("15000")) >= 0) {
             this.niveauFidelite = CustomerTier.PLATINUM;
         } else if (totalCommandes >= 10 || montantCumule.compareTo(new BigDecimal("5000")) >= 0) {

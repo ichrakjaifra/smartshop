@@ -93,8 +93,15 @@ public class Commande {
                 .filter(p -> p.getStatut() == PaymentStatus.ENCAISSÉ)
                 .map(Paiement::getMontant)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-        this.montantRestant = totalTTC.subtract(totalPaye)
-                .setScale(2, BigDecimal.ROUND_HALF_UP);
+
+        BigDecimal montantDu = totalTTC.subtract(totalPaye);
+
+        // Limite à 0 minimum (pas de valeurs négatives)
+        if (montantDu.compareTo(BigDecimal.ZERO) < 0) {
+            this.montantRestant = BigDecimal.ZERO;
+        } else {
+            this.montantRestant = montantDu.setScale(2, BigDecimal.ROUND_HALF_UP);
+        }
     }
 
     private BigDecimal calculerRemiseFidelite() {
@@ -120,7 +127,7 @@ public class Commande {
     }
 
     public boolean estEntierementPayee() {
-        return montantRestant != null && montantRestant.compareTo(BigDecimal.ZERO) == 0;
+        return montantRestant != null && montantRestant.compareTo(BigDecimal.ZERO) <= 0;
     }
 }
 

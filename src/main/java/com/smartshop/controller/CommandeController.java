@@ -22,6 +22,11 @@ public class CommandeController {
         return ResponseEntity.ok(commandeService.creerCommande(requestDTO, session));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<CommandeResponseDTO> getCommandeById(@PathVariable Long id, HttpSession session) {
+        return ResponseEntity.ok(commandeService.getCommandeById(id, session));
+    }
+
     @GetMapping("/client/{clientId}")
     public ResponseEntity<List<CommandeResponseDTO>> trouverCommandesParClient(@PathVariable Long clientId,
                                                                                HttpSession session) {

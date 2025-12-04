@@ -35,6 +35,26 @@ public class PaiementService {
             throw new RuntimeException("Impossible de modifier une commande finalisée");
         }
 
+        // Vérifier que le paiement ne dépasse pas le montant restant de manière excessive
+        BigDecimal montantRestantActuel = commande.getMontantRestant();
+        if (montantRestantActuel == null) {
+            montantRestantActuel = commande.getTotalTTC();
+        }
+
+        // Si montant restant est négatif, on considère qu'il est à 0
+        BigDecimal montantDuEffectif = montantRestantActuel.compareTo(BigDecimal.ZERO) < 0
+                ? BigDecimal.ZERO
+                : montantRestantActuel;
+
+        // Empêcher les paiements trop élevés (maximum 10% de plus que le montant dû)
+        BigDecimal tolerance = montantDuEffectif.multiply(new BigDecimal("1.10"));
+        if (requestDTO.getMontant().compareTo(tolerance) > 0) {
+            throw new RuntimeException(
+                    String.format("Paiement trop élevé. Montant dû: %.2f DH (tolérance max: %.2f DH)",
+                            montantDuEffectif.doubleValue(), tolerance.doubleValue())
+            );
+        }
+
         // Déterminer le numéro de paiement
         List<Paiement> paiementsExistants = paiementRepository.findByCommandeId(commande.getId());
         int numeroPaiement = paiementsExistants.size() + 1;
