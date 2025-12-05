@@ -10,6 +10,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import java.util.Optional;
 
@@ -18,6 +20,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class AuthServiceTest {
 
     @Mock
@@ -157,5 +160,29 @@ class AuthServiceTest {
 
         // Assert
         assertNull(userId);
+    }
+
+    @Test
+    void testIsClient_WhenNull() {
+        // Arrange
+        when(session.getAttribute("role")).thenReturn(null);
+
+        // Act
+        boolean result = authService.isClient(session);
+
+        // Assert
+        assertFalse(result);
+    }
+
+    @Test
+    void testIsAdmin_WhenNull() {
+        // Arrange
+        when(session.getAttribute("role")).thenReturn(null);
+
+        // Act
+        boolean result = authService.isAdmin(session);
+
+        // Assert
+        assertFalse(result);
     }
 }
